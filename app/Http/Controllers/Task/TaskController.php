@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $tasks = Task::latest()->paginate(10);
+
+        return response()->json($tasks);
     }
 
     public function create()
