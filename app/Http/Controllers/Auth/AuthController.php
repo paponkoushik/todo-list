@@ -31,21 +31,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    // public function signup(SignupRequest $request): JsonResponse
-    // {
-    //     $user = User::create([
-    //         'name' => $request->get('name'),
-    //         'email' => $request->get('email'),
-    //         'password' => bcrypt($request->get('password'))
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'User Registered Successfully',
-    //         'token' => $user->createToken("API TOKEN")->plainTextToken
-    //     ], 200);
-    // }
-
     public function logout(Request $request): JsonResponse
     {
         $user = Auth::user();

@@ -14,24 +14,26 @@ class TaskTest extends TestCase
     {
         Task::factory()->count(15)->create();
 
-        $response = $this->getJson('/api/tasks?page=1');
+        $response = $this->getJson('/api/tasks?page=1', [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
 
         $response->assertOk()
-                ->assertJsonStructure([
-                    'current_page',
-                    'data',
-                    'first_page_url',
-                    'from',
-                    'last_page',
-                    'last_page_url',
-                    'links',
-                    'next_page_url',
-                    'path',
-                    'per_page',
-                    'prev_page_url',
-                    'to',
-                    'total',
-                ]);
+                 ->assertJsonStructure([
+                     'current_page',
+                     'data',
+                     'first_page_url',
+                     'from',
+                     'last_page',
+                     'last_page_url',
+                     'links',
+                     'next_page_url',
+                     'path',
+                     'per_page',
+                     'prev_page_url',
+                     'to',
+                     'total',
+                 ]);
 
         $this->assertCount(10, $response->json('data'));
     }
@@ -40,27 +42,29 @@ class TaskTest extends TestCase
     {
         Task::factory()->count(15)->create();
 
-        $response = $this->getJson('/api/tasks?page=2');
+        $response = $this->getJson('/api/tasks?page=2', [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
 
         $response->assertOk()
-                ->assertJsonStructure([
-                    'current_page',
-                    'data',
-                    'first_page_url',
-                    'from',
-                    'last_page',
-                    'last_page_url',
-                    'links',
-                    'next_page_url',
-                    'path',
-                    'per_page',
-                    'prev_page_url',
-                    'to',
-                    'total',
-                ])
-                ->assertJson([
-                    'current_page' => 2
-                ]);
+                 ->assertJsonStructure([
+                     'current_page',
+                     'data',
+                     'first_page_url',
+                     'from',
+                     'last_page',
+                     'last_page_url',
+                     'links',
+                     'next_page_url',
+                     'path',
+                     'per_page',
+                     'prev_page_url',
+                     'to',
+                     'total',
+                 ])
+                 ->assertJson([
+                     'current_page' => 2
+                 ]);
 
         $this->assertCount(5, $response->json('data'));
     }
@@ -69,7 +73,9 @@ class TaskTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $response = $this->getJson("/api/tasks/{$task->id}");
+        $response = $this->getJson("/api/tasks/{$task->id}", [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
 
         $response
             ->assertOk()
@@ -83,7 +89,9 @@ class TaskTest extends TestCase
     {
         $data = ['title' => 'Test Task', 'body' => 'Test body'];
 
-        $response = $this->postJson('/api/tasks', $data);
+        $response = $this->postJson('/api/tasks', $data, [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
 
         $response->assertCreated()
                  ->assertJsonFragment($data);
@@ -93,7 +101,9 @@ class TaskTest extends TestCase
 
     public function test_it_fails_with_invalid_data()
     {
-        $response = $this->postJson('/api/tasks', []);
+        $response = $this->postJson('/api/tasks', [], [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors(['title', 'body']);
     }
@@ -110,7 +120,9 @@ class TaskTest extends TestCase
             'body'  => 'Updated Body',
         ];
 
-        $response = $this->putJson("/api/tasks/{$task->id}", $data);
+        $response = $this->putJson("/api/tasks/{$task->id}", $data, [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
 
         $response->assertOk()
                 ->assertJsonFragment($data);
@@ -125,7 +137,9 @@ class TaskTest extends TestCase
             'body'  => 'Initial Body',
         ]);
 
-        $response = $this->putJson("/api/tasks/{$task->id}", []);
+        $response = $this->putJson("/api/tasks/{$task->id}", [], [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['title', 'body']);
@@ -134,13 +148,14 @@ class TaskTest extends TestCase
     public function test_it_soft_deletes_a_task()
     {
         $task = Task::factory()->create();
-    
-        $response = $this->deleteJson("/api/tasks/{$task->id}");
-    
+
+        $response = $this->deleteJson("/api/tasks/{$task->id}", [], [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
+
         $response->assertOk()
                  ->assertJson(['message' => 'Task deleted successfully.']);
-    
-        $this->assertSoftDeleted('tasks', ['id' => $task->id]);
-    }    
 
+        $this->assertSoftDeleted('tasks', ['id' => $task->id]);
+    }
 }

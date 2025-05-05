@@ -10,4 +10,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::apiResource('/tasks', TaskController::class); 
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('/tasks', TaskController::class);
+});
+// Route::apiResource('/tasks', TaskController::class); 
