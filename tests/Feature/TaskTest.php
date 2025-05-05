@@ -65,8 +65,6 @@ class TaskTest extends TestCase
         $this->assertCount(5, $response->json('data'));
     }
 
-
-
     public function test_it_creates_task_with_valid_data()
     {
         $data = ['title' => 'Test Task', 'body' => 'Test body'];
@@ -118,4 +116,17 @@ class TaskTest extends TestCase
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['title', 'body']);
     }
+
+    public function test_it_soft_deletes_a_task()
+    {
+        $task = Task::factory()->create();
+    
+        $response = $this->deleteJson("/api/tasks/{$task->id}");
+    
+        $response->assertOk()
+                 ->assertJson(['message' => 'Task deleted successfully.']);
+    
+        $this->assertSoftDeleted('tasks', ['id' => $task->id]);
+    }    
+
 }
