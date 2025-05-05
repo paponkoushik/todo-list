@@ -29,12 +29,9 @@ class TaskController extends Controller
         return response()->json($task, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Task $task)
     {
-        //
+        return response()->json($task, 200);
     }
 
     public function edit(Task $task)

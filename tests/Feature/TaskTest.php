@@ -65,6 +65,20 @@ class TaskTest extends TestCase
         $this->assertCount(5, $response->json('data'));
     }
 
+    public function test_it_shows_a_specific_task()
+    {
+        $task = Task::factory()->create();
+
+        $response = $this->getJson("/api/tasks/{$task->id}");
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'title' => $task->title,
+                'body' => $task->body,
+            ]);
+    }
+
     public function test_it_creates_task_with_valid_data()
     {
         $data = ['title' => 'Test Task', 'body' => 'Test body'];
