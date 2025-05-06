@@ -28,11 +28,6 @@ export const useAuthStore = defineStore('auth', {
         
         return true;
       } catch (error) {
-        // if (error.response.status === 422) {
-        //   this.errors = error.response.data.errors;  
-        // }
-
-
         if (error.response?.status === 422) {
             this.errors = { ...error.response.data.errors };
           } else if (error.response?.status === 401) {
