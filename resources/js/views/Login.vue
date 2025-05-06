@@ -63,10 +63,6 @@ const authErrors = computed(() => authStore.authErrors);
           <span v-else>Logging in...</span>
         </button>
       </form>
-
-      <div class="login-footer">
-        <p>Don't have an account? <router-link to="/register" class="link">Sign up</router-link></p>
-      </div>
     </div>
   </div>
 </template>
@@ -119,7 +115,8 @@ const authErrors = computed(() => authStore.authErrors);
 }
 
 input {
-  width: 92%;
+  max-width: 384px;
+  width: 100%;
   padding: 0.875rem 1rem;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -200,7 +197,9 @@ input:focus {
 .link:hover {
   text-decoration: underline;
 }
-
+button {
+  text-decoration: none;
+}
 @media (max-width: 480px) {
   .login-app {
     padding: 1.75rem;
