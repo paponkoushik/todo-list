@@ -1,11 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useTaskStore } from '@/stores/task'
+import { ref, onMounted, computed } from 'vue'
+import { useTaskStore } from '../stores/task'
+import { useAuthStore } from '../stores/auth';
+import { useRouter } from 'vue-router';
 
 const taskStore = useTaskStore()
+const authStore = useAuthStore()
+const router = useRouter()
 const tasks = ref([])
 const newTask = ref({ title: '', body: '' })
 const editingTask = ref(null)
+
+const taskCreateErrors = computed(() => taskStore.taskCreateErrors);
+const taskUpdateErrors = computed(() => taskStore.taskUpdateErrors);
 
 const fetchTasks = async (page = 1) => {
   tasks.value = await taskStore.getTasks(page)
@@ -29,17 +36,17 @@ const openEditModal = (task) => {
 }
 
 const updateTask = async () => {
-  await taskStore.updateTask(editingTask.value.id, editingTask.value)
-  editingTask.value = null
+  const success = await taskStore.updateTask(editingTask.value.id, editingTask.value)
+
+  if (success) {
+    editingTask.value = null
+  }
   fetchTasks()
 }
 
-const toggleComplete = async (task) => {
-  await taskStore.updateTask(task.id, {
-    ...task,
-    is_completed: !task.is_completed
-  })
-  fetchTasks()
+const closeModal = async () => {
+  taskStore.resetUpdateErrors();
+  editingTask.value = null
 }
 
 const markComplete = async (task) => {
@@ -52,12 +59,23 @@ const markComplete = async (task) => {
   fetchTasks()
 }
 
+const logout = async() => {
+  const success = await authStore.logout();
+
+  if (success) {
+    router.push('/');
+  }
+}
+
 onMounted(() => {
   fetchTasks()
 })
 </script>
 
 <template>
+  <div class="header">
+    <button class="logout" @click.prevent="logout">Logout</button>
+  </div>
 
   <div class="app-container">
     <div class="todo-app">
@@ -73,8 +91,9 @@ onMounted(() => {
             v-model="newTask.title" 
             placeholder="Task title" 
             class="form-input"
-            required
+            :class="{ 'input-error': taskCreateErrors.title }"
           />
+          <span class="error-message" v-if="taskCreateErrors.title">{{ taskCreateErrors.title[0] }}</span>
         </div>
         <div class="form-group">
           <textarea
@@ -82,7 +101,9 @@ onMounted(() => {
             placeholder="Task description"
             class="form-textarea"
             rows="2"
+            :class="{ 'input-error': taskCreateErrors.body }"
           ></textarea>
+          <span class="error-message" v-if="taskCreateErrors.body">{{ taskCreateErrors.body[0] }}</span>
         </div>
         <button type="submit" class="add-button">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -101,9 +122,10 @@ onMounted(() => {
                 <input 
                   type="checkbox" 
                   :checked="task.is_completed" 
-                  @change="toggleComplete(task)" 
+                  
                   class="checkbox-input"
                 />
+                <!-- @change="toggleComplete(task)"  -->
                 <span class="checkmark"></span>
               </div>
               <div class="task-details">
@@ -172,15 +194,17 @@ onMounted(() => {
           <div class="modal-body">
             <div class="form-group">
               <label class="form-label">Title</label>
-              <input v-model="editingTask.title" class="form-input" />
+              <input v-model="editingTask.title" class="form-input"  :class="{ 'input-error': taskUpdateErrors.title }"/>
+              <span class="error-message" v-if="taskUpdateErrors.title">{{ taskUpdateErrors.title[0] }}</span>
             </div>
             <div class="form-group">
               <label class="form-label">Description</label>
-              <textarea v-model="editingTask.body" class="form-textarea" rows="3"></textarea>
+              <textarea v-model="editingTask.body" class="form-textarea" rows="3" :class="{ 'input-error': taskUpdateErrors.body }"></textarea>
+              <span class="error-message" v-if="taskUpdateErrors.body">{{ taskUpdateErrors.body[0] }}</span>
             </div>
           </div>
           <div class="modal-footer">
-            <button @click="editingTask = null" class="cancel-button">Cancel</button>
+            <button @click="closeModal" class="cancel-button">Cancel</button>
             <button @click="updateTask" class="save-button">Save Changes</button>
           </div>
         </div>
@@ -204,6 +228,26 @@ onMounted(() => {
   padding: 2rem;
   background-color: #f9fafb;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.header {
+  width: 100%;
+  max-width: 800px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+  margin: 0 auto;
+  display: flex;
+  justify-content: end;
+}
+
+.logout {
+  background-color: #ef4444;
+  color: white;
+  border-radius: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
 }
 
 .todo-app {
@@ -607,6 +651,22 @@ button {
   background-color: #4f46e5;
 }
 
+
+.input-error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+  display: block;
+  margin-top: 0.5rem;
+  color: #ef4444;
+  font-size: 0.85rem;
+}
 /*TODO: Responsive Adjustments */
 @media (max-width: 640px) {
   .app-container {

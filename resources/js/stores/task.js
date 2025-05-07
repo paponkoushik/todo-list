@@ -9,7 +9,14 @@ export const useTaskStore = defineStore('task', {
       last_page: 1,
       total: 0,
     },
+    createErrors: {},
+    updateErrors: {}
   }),
+
+  getters: {
+    taskCreateErrors: (state) => state.createErrors,
+    taskUpdateErrors: (state) => state.updateErrors
+  },
 
   actions: {
     async getTasks(page = 1) {
@@ -29,22 +36,41 @@ export const useTaskStore = defineStore('task', {
     },
 
     async createTask(task) {
+      this.createErrors = {}
       try {
         await api.post('/tasks', task);
       } catch (error) {
-        console.error(error);
-        throw new Error('Failed to create task');
+        console.log('calling', error.response?.status === 422);
+        if (error.response?.status === 422) {
+          this.createErrors = error.response.data.errors;
+          console.log('papon', this.createErrors);
+          
+        } else {
+          this.createErrors = { general: ["An unexpected error occurred"] };
+        }
+        return false;
       }
     },
 
     async updateTask(id, task) {
+      this.updateErrors = {}
       try {
         await api.put(`/tasks/${id}`, task);
+        return true;
       } catch (error) {
-        console.error(error);
-        throw new Error('Failed to update task');
+        if (error.response?.status === 422) {
+          this.updateErrors = error.response.data.errors;
+        } else {
+          this.updateErrors = { general: ["An unexpected error occurred"] };
+        }
+        return false;
       }
     },
+
+    resetUpdateErrors() {
+      this.updateErrors = {};
+    },
+    
 
     async markComplete(id, task) {
       try {
