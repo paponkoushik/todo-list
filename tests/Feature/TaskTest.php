@@ -130,6 +130,29 @@ class TaskTest extends TestCase
         $this->assertDatabaseHas('tasks', $data);
     }
 
+    public function test_it_mark_as_complete_task()
+    {
+        $task = Task::create([
+            'title' => 'Initial Title',
+            'body'  => 'Initial Body',
+        ]);
+
+        $response = $this->putJson("/api/mark-complete/{$task->id}",[], [
+            'Authorization' => 'Bearer ' . $this->createAuthenticatedUser(),
+        ]);
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'id' => $task->id,
+                'is_completed' => true,
+            ]);
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'is_completed' => true,
+        ]);
+    }
+
     public function test_it_fails_to_update_with_invalid_data()
     {
         $task = Task::create([

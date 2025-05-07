@@ -46,6 +46,15 @@ export const useTaskStore = defineStore('task', {
       }
     },
 
+    async markComplete(id, task) {
+      try {
+        await api.put(`/mark-complete/${id}`, task);
+      } catch (error) {
+        console.error(error);
+        throw new Error('Failed to mark complete');
+      }
+    },
+
     async deleteTask(id) {
       try {
         await api.delete(`/tasks/${id}`);

@@ -42,12 +42,23 @@ const toggleComplete = async (task) => {
   fetchTasks()
 }
 
+const markComplete = async (task) => {
+  console.log('test', task);
+  
+  await taskStore.markComplete(task.id, {
+    ...task,
+    is_completed: true
+  })
+  fetchTasks()
+}
+
 onMounted(() => {
   fetchTasks()
 })
 </script>
 
 <template>
+
   <div class="app-container">
     <div class="todo-app">
       <header class="app-header">
@@ -103,7 +114,7 @@ onMounted(() => {
             <div class="task-actions">
               <button 
                 v-if="!task.is_completed" 
-                @click="toggleComplete(task)" 
+                @click="markComplete(task)" 
                 class="action-button complete-button"
                 title="Mark as complete"
               >
@@ -366,8 +377,8 @@ button {
   content: "";
   position: absolute;
   display: none;
-  left: 6px;
-  top: 2px;
+  left: 5px;
+  top: 0;
   width: 5px;
   height: 10px;
   border: solid white;
